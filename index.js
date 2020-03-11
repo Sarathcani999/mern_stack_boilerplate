@@ -1,5 +1,7 @@
 const express = require('express')
 const app = express()
+const bodyparser = require('body-parser')
+
 const PORT = 5000
 
 app.get('' , (req,res) => {
