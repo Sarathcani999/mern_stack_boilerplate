@@ -9,7 +9,7 @@ const users = require('./apis/users/users')
 
 const PORT = manifest.PORT_SERVER
 
-// Connecting to the MySql Database
+// Connecting to the MySQL Database
 
 connection.connect((error) => {
     if (error) {
