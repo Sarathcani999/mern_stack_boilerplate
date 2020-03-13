@@ -1,13 +1,32 @@
 const express = require('express')
+const chalk = require('chalk')
 const app = express()
 const bodyparser = require('body-parser')
+const cookieparser = require('cookie-parser')
+const connection = require('./config/connect')
+const manifest = require('./manifest')
+const users = require('./apis/users/users')
 
-const PORT = 5000
+const PORT = manifest.PORT_SERVER
 
-app.get('' , (req,res) => {
-    res.send("<h2>NODE WORKING PROPERLY</h2>")
+// Connecting to the MySql Database
+
+connection.connect((error) => {
+    if (error) {
+        console.log(chalk.bold.red("ERROR : ") + error.message)
+    } else {
+        console.log(chalk.bold.yellowBright("Connected to MySQL Database"))
+    }
 })
 
+// middleware config
+
+app.use(bodyparser.urlencoded({extended : true}))
+app.use(bodyparser.json())
+app.use(cookieparser())
+
+app.use('/api/users' , users)
+
 app.listen(PORT , () => {
-    console.log("PORT established at " + PORT)
+    console.log(chalk.yellow("PORT established at " )+ chalk.white.bold(PORT))
 })
