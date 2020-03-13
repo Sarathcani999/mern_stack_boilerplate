@@ -5,8 +5,9 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {JWT_Key} = require('../../manifest')
 const cookies = require('cookies')
+const {authenticate , notauthenticate} = require('../middleware/authentication')
 
-router.post('/register' , async (req,res) => {
+router.post('/register' , notauthenticate , async (req,res) => {
 
     if (req.body.username === undefined | req.body.password === undefined){
         res.status(500).send({"error" : "Provide all Fields"})
@@ -20,19 +21,27 @@ router.post('/register' , async (req,res) => {
         console.log(chalk.yellowBright("req.body : ") + JSON.stringify(req.body))
         console.log(chalk.yellowBright("SQL Query : ") + chalk.italic(insertQuery))
     
-        connection.query(insertQuery , (error,results,fields) => {
+        connection.query(insertQuery , async (error,results,fields) => {
             if (error) {
                 console.log(chalk.bold.red("SQL ERR : ")+error.message)
                 res.status(500).send(error);
             }else {
-                return res.sendStatus(201)
+                var signedToken =  await jwt.sign(req.body.username , JWT_Key )
+                let sql = "INSERT INTO tokens (username , token) VALUES ('"+ req.body.username +"' , '" + signedToken + "')"
+                console.log(chalk.yellowBright("SQL Query : ") + chalk.italic(sql))
+                await connection.query(sql , (error , results , fields) => {
+                    res.cookie('x_Auth' , signedToken)
+                    res.status(201).send({
+                        "Authentication Token" : signedToken
+                    })
+                })
             }
         })
     }
 
 })
 
-router.post('/login' , (req,res) => {
+router.post('/login' , notauthenticate , (req,res) => {
     
     if (req.body.username === undefined | req.body.password === undefined){
         res.status(500).send({"error" : "Provide all Fields"})
@@ -66,6 +75,10 @@ router.post('/login' , (req,res) => {
             }
         })
     }
+})
+
+router.get('/dashboard' , authenticate , (req,res) => {
+    res.status(200).send(req.username)
 })
 
 module.exports = router
