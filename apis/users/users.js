@@ -4,7 +4,6 @@ const chalk = require('chalk')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {JWT_Key} = require('../../manifest')
-const cookies = require('cookies')
 const {authenticate , notauthenticate} = require('../middleware/authentication')
 
 router.post('/register' , notauthenticate , async (req,res) => {
